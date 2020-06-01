@@ -6,6 +6,8 @@ class Gameboard {
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]); // put the canvas into our document
         this.interval = setInterval(draw, 20); // creates a routine to run the draw function
+
+        this.canvas.onmousemove = mousepos;
     }
 
     clear() {
@@ -15,40 +17,87 @@ class Gameboard {
 }
 
 class Component {
-    constructor(width, height, color, x, y) {
-        this.width = width;
-        this.height = height;
+    constructor(w, h, color, x, y) {
+        this.w = w;
+        this.h = h;
         this.x = x;
         this.y = y;
         this.color = color;
     }
 
+    get width() {
+        return this.w*gameboard.canvas.width
+    }
+
+    get height() {
+        return this.h*gameboard.canvas.height
+    }
+
+    get posx() {
+        return (this.x)*gameboard.canvas.width
+    }
+
+    get posy() {
+        return (this.y)*gameboard.canvas.height
+    }
+
     update() {
         var ctx = gameboard.context;
         ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillRect(this.posx, this.posy, this.width, this.height);
     }
 }
 
 class Gamebutton extends Component {
-    constructor(width, height, color, x, y, team) {
-        super(width, height, color, x, y);
+    constructor(w, h, color, indx, indy, team) {
+        super(w, h, color, 0, 0);
         this.team = team;
+        this.indx = indx;
+        this.indy = indy;
+
+        this.state = "empty"
     }
     update() {
         
         var ctx = gameboard.context;
         
 
-        if (mouseX > this.x && mouseX < this.x+this.width && mouseY > this.y && mouseY < this.y+this.height) {
-            
+        if (mouseX > this.posx && mouseX < this.posx+this.width && mouseY > this.posy && mouseY < this.posy+this.height) {
             ctx.fillStyle = "gold"
         }
-        else{
+        else if (this.state == "clicked"){
+            ctx.fillStyle = TEAM_COLOURS[Math.abs(this.team-activeplayer)]
+        }
+        else {
             ctx.fillStyle = this.color;
         }
         
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillRect(this.posx, 
+                    this.posy, 
+                    this.width, 
+                    this.height);
+    }
+
+    get width() {
+        // override
+        return this.w*gameboard.canvas.height
+    }
+
+    get posx() {
+        return (this.indx*BUTTON_STEP+INITIAL_X+(NEXT_GRID_START)*Math.abs(this.team-activeplayer))*gameboard.canvas.height
+    }
+
+    get posy() {
+        return (this.indy*BUTTON_STEP+INITIAL_Y)*gameboard.canvas.height
+    }
+
+    click() {
+        if (this.state == "empty") {
+            this.state = "clicked"
+        }
+        else {
+            this.state = "empty"
+        }
     }
 }
 
@@ -59,11 +108,10 @@ class TextBx extends Component {
     }
 
     update() {
-        
         var ctx = gameboard.context;
         ctx.fillStyle = this.color
         ctx.font = "30px Roboto";
-        ctx.fillText(this.text, this.x, this.y);
+        ctx.fillText(this.text, this.posx, this.posy);
     }
 
 }

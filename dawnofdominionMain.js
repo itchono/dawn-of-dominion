@@ -3,6 +3,9 @@
 
 Changelog
 
+Version 0.1.1
+2020/06/01-02
+
 Version 0.1
 2020/06/01
 - Started the game
@@ -16,13 +19,18 @@ var mouseY
 
 var gameboard
 
+var selectX
+var selectY
+
+var activeplayer = 0
+
 function startGame() {
-    document.onmousemove = mousepos;
+    
     document.addEventListener("click", click); // add event
 
     gameboard = new Gameboard();
 
-    tx = new TextBx(300, 100, "CLicked on", "grey");
+    tx = new TextBx(0.2, 0.1, "Clicked on", "grey");
 
     gamebuttons = new Array(2)
     for (var grid = 0; grid < 2; grid++) {
@@ -30,10 +38,16 @@ function startGame() {
         for (var x = 0; x < GRID_SIZE; x++) {
             gamebuttons[grid][x] = new Array(6)
             for (var y = 0; y < GRID_SIZE; y++) { 
-                gamebuttons[grid][x][y] = new Gamebutton(BUTTON_SIZE, BUTTON_SIZE, "grey", x*BUTTON_STEP+INITIAL_X+(NEXT_GRID_START)*grid, y*BUTTON_STEP+INITIAL_Y, grid)
+                gamebuttons[grid][x][y] = new Gamebutton(BUTTON_SIZE, BUTTON_SIZE, "grey", x, y, grid)
             }
         }
-    }  
+    } 
+    
+    document.addEventListener('keydown', function(event) {
+        if(event.keyCode == 32) {
+            activeplayer = 1-activeplayer;
+        }
+    });
 }
 
 function draw() {
@@ -49,40 +63,57 @@ function draw() {
 }
 
 function mousepos(e){
-    mouseX = e.clientX
-    mouseY = e.clientY
-}
+    var relX = e.clientX - gameboard.canvas.offsetLeft - INITIAL_X*gameboard.canvas.height
+    var relY = e.clientY- gameboard.canvas.offsetTop - INITIAL_Y*gameboard.canvas.height
 
-function click(e)  {
-    var relX = e.clientX - INITIAL_X;
-    var relY = e.clientY - INITIAL_Y;
+    mouseX = e.clientX - gameboard.canvas.offsetLeft
+    mouseY = e.clientY- gameboard.canvas.offsetTop
 
     var grid = 0;
 
-    if (relX > NEXT_GRID_START) {
+    if (relX > NEXT_GRID_START*gameboard.canvas.height) {
         grid = 1;
-        relX -= NEXT_GRID_START
+        relX -= NEXT_GRID_START*gameboard.canvas.height
     }
 
-    var indX = Math.floor(relX/BUTTON_STEP)
-    var indY = Math.floor(relY/BUTTON_STEP)
+    var indX = Math.floor(relX/(BUTTON_STEP*gameboard.canvas.height))
+    var indY = Math.floor(relY/(BUTTON_STEP*gameboard.canvas.height))
 
     if (indX >= 0 && indX < GRID_SIZE && indY >= 0 && indY < GRID_SIZE) {
 
-        if (gamebuttons[grid][indX][indY].team == 0) {
-            gamebuttons[grid][indX][indY].color = "CORNFLOWERBLUE"
-        }
-        else {
-            gamebuttons[grid][indX][indY].color = "ORANGERED"
-        }
+        var st = "Hover: Grid" + Math.abs(activeplayer-grid) + " (" + indX + "," + indY + ")";
+
+        tx.text = st
+    }
+}
+
+function click(e)  {
+    // handles clicking of a button
+    var relX = e.clientX - INITIAL_X*gameboard.canvas.height - gameboard.canvas.offsetLeft;
+    var relY = e.clientY - INITIAL_Y*gameboard.canvas.height - gameboard.canvas.offsetTop;
+
+    var grid = 0;
+
+    if (relX > NEXT_GRID_START*gameboard.canvas.height) {
+        grid = 1;
+        relX -= NEXT_GRID_START*gameboard.canvas.height
     }
 
-    var st = "Clicked on button " + grid + "," + indX + "," + indY;
+    var indX = Math.floor(relX/(BUTTON_STEP*gameboard.canvas.height))
+    var indY = Math.floor(relY/(BUTTON_STEP*gameboard.canvas.height))
 
-    tx.text = st
+    if (indX >= 0 && indX < GRID_SIZE && indY >= 0 && indY < GRID_SIZE) {
+        gamebuttons[Math.abs(activeplayer-grid)][indX][indY].click()
 
-    console.log(st)
+        var st = "Clicked on button " + Math.abs(activeplayer-grid) + "," + indX + "," + indY;
+
+        tx.text = st
+    }
+
+    
 }
+
+
 
 
 
