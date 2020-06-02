@@ -30,7 +30,7 @@ function startGame() {
 
     gameboard = new Gameboard();
 
-    tx = new TextBx(0.2, 0.1, "Clicked on", "grey");
+    tx = new TextBx(0.4, 0.1, "Clicked on", "grey");
 
     gamebuttons = new Array(2)
     for (var grid = 0; grid < 2; grid++) {

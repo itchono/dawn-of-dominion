@@ -46,6 +46,10 @@ class Component {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.posx, this.posy, this.width, this.height);
     }
+
+    click () {
+        // empty
+    }
 }
 
 class Gamebutton extends Component {
@@ -92,13 +96,41 @@ class Gamebutton extends Component {
     }
 
     click() {
-        if (this.state == "empty") {
-            this.state = "clicked"
+
+        if (this.team == activeplayer) {
+            if (this.state == "empty") {
+                this.state = "clicked"
+            }
+            else {
+                this.state = "empty"
+            }
         }
         else {
-            this.state = "empty"
+            selectX = this.indx
+            selectY = this.indy
         }
+        
     }
+}
+
+class UIButton extends Component {
+    constructor(x, y, text, color, clickfunc) {
+        super(0, 0, color, x, y);
+        this.text = text;
+        this.clickfunc = clickfunc
+    }
+
+    update() {
+        var ctx = gameboard.context;
+        ctx.fillStyle = this.color
+        ctx.font = "30px Roboto";
+        ctx.fillText(this.text, this.posx, this.posy);
+    }
+
+    click() {
+        this.clickfunc()
+    }
+
 }
 
 class TextBx extends Component {
