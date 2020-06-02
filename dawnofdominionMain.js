@@ -3,8 +3,13 @@
 
 Changelog
 
-Version 0.1.1
-2020/06/01-02
+Version 0.2
+2020/06/02
+- Very basic turn strategy added
+- Image assets for units added
+- Very basic shop system added
+- Placing units down works
+- Firing works, with hit detection
 
 Version 0.1
 2020/06/01
@@ -12,25 +17,46 @@ Version 0.1
 - Added button arrays
 */
 
-var gamebuttons
+var remainingunits = 5 // TODO implement
 
 var mouseX
 var mouseY
 
 var gameboard
+var gamebuttons
+var nextbutton
 
+// combat
 var selectX
 var selectY
 
+var tgtX
+var tgtY
+
+// shopping
+var selectedUNIT = ""
+
 var activeplayer = 0
 
+var turnnumber = 0
+
 function startGame() {
+
+
     
     document.addEventListener("click", click); // add event
 
     gameboard = new Gameboard();
 
-    tx = new TextBx(0.4, 0.1, "Clicked on", "grey");
+    tx = new TextBx(0.5, 0.9, "Current Square: ", "grey");
+    statustxt = new TextBx(0.15, 0.1, "Turn 1: Placing Units", "grey");
+    turntxt = new TextBx(0.15, 0.15, "Player 1's Turn", "grey");
+
+    nextbutton = new UIButton(0.06, 0.04, 0.3, 0.1, "Next Turn", "darkgrey", "black", nextturn)
+    firebutton = new UIButton(0.06, 0.04, 0.4, 0.1, "FIRE", "darkgrey", "black", fire)
+
+    equanosbutton = new ShopItem(0.06, 0.08, 0.9, 0.3, "1200", "darkgrey", "black", "equanosship")
+    equanosbutton2 = new ShopItem(0.06, 0.08, 0.9, 0.4, "800", "darkgrey", "black", "equanostank")
 
     gamebuttons = new Array(2)
     for (var grid = 0; grid < 2; grid++) {
@@ -43,11 +69,7 @@ function startGame() {
         }
     } 
     
-    document.addEventListener('keydown', function(event) {
-        if(event.keyCode == 32) {
-            activeplayer = 1-activeplayer;
-        }
-    });
+    document.addEventListener('keydown',keydown)
 }
 
 function draw() {
@@ -60,6 +82,13 @@ function draw() {
         }
     }
     tx.update()
+    nextbutton.update()
+    statustxt.update()
+    turntxt.update()
+    firebutton.update()
+
+    equanosbutton.update()
+    equanosbutton2.update()
 }
 
 function mousepos(e){
@@ -81,7 +110,7 @@ function mousepos(e){
 
     if (indX >= 0 && indX < GRID_SIZE && indY >= 0 && indY < GRID_SIZE) {
 
-        var st = "Hover: Grid" + Math.abs(activeplayer-grid) + " (" + indX + "," + indY + ")";
+        var st = "Current Square: Grid " + Math.abs(activeplayer-grid) + " (" + indX + "," + indY + ")";
 
         tx.text = st
     }
@@ -105,12 +134,23 @@ function click(e)  {
     if (indX >= 0 && indX < GRID_SIZE && indY >= 0 && indY < GRID_SIZE) {
         gamebuttons[Math.abs(activeplayer-grid)][indX][indY].click()
 
-        var st = "Clicked on button " + Math.abs(activeplayer-grid) + "," + indX + "," + indY;
+        // var st = "Clicked on button: Grid " + Math.abs(activeplayer-grid) + " (" + indX + "," + indY + ")";
 
-        tx.text = st
     }
+    nextbutton.click()
+
+    firebutton.click()
+
+    equanosbutton.click()
+    equanosbutton2.click()
 
     
+}
+
+function keydown(event) {
+    if(event.keyCode == 32) {
+        nextturn()
+    }
 }
 
 
