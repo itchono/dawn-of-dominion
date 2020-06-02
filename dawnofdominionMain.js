@@ -92,11 +92,11 @@ function draw() {
 }
 
 function mousepos(e){
-    var relX = e.clientX - gameboard.canvas.offsetLeft - INITIAL_X*gameboard.canvas.height
-    var relY = e.clientY- gameboard.canvas.offsetTop - INITIAL_Y*gameboard.canvas.height
+    var relX = e.clientX - gameboard.canvas.offsetLeft - INITIAL_X*gameboard.canvas.height + document.body.scrollLeft
+    var relY = e.clientY- gameboard.canvas.offsetTop - INITIAL_Y*gameboard.canvas.height + document.body.scrollTop
 
-    mouseX = e.clientX - gameboard.canvas.offsetLeft
-    mouseY = e.clientY- gameboard.canvas.offsetTop
+    mouseX = e.clientX - gameboard.canvas.offsetLeft + document.body.scrollLeft
+    mouseY = e.clientY- gameboard.canvas.offsetTop + document.body.scrollTop
 
     var grid = 0;
 
@@ -118,8 +118,8 @@ function mousepos(e){
 
 function click(e)  {
     // handles clicking of a button
-    var relX = e.clientX - INITIAL_X*gameboard.canvas.height - gameboard.canvas.offsetLeft;
-    var relY = e.clientY - INITIAL_Y*gameboard.canvas.height - gameboard.canvas.offsetTop;
+    var relX = e.clientX - gameboard.canvas.offsetLeft - INITIAL_X*gameboard.canvas.height + document.body.scrollLeft
+    var relY = e.clientY- gameboard.canvas.offsetTop - INITIAL_Y*gameboard.canvas.height + document.body.scrollTop
 
     var grid = 0;
 
