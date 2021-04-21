@@ -74,7 +74,12 @@ class Gamebutton extends Component {
         
 
         if (mouseX > this.posx && mouseX < this.posx+this.width && mouseY > this.posy && mouseY < this.posy+this.height) {
-            ctx.fillStyle = "gold"
+            
+            if (mouseDown) {
+                ctx.fillStyle = "lightgray"
+            } else {
+                ctx.fillStyle = "gold"
+            }
         }
         else if (selectX == this.indx && selectY == this.indy && this.team == activeplayer) {
             ctx.fillStyle = "green"
@@ -198,6 +203,17 @@ class TextBx extends Component {
 }
 
 function nextturn() {
+
+    function reqListener () {
+        alert("It is now Player" + (activeplayer+1) + "'s Turn. Server says: " + this.responseText)
+    }
+    
+    var oReq = new XMLHttpRequest();
+    oReq.addEventListener("load", reqListener);
+    oReq.open("GET", "/move?msg=hello");
+    oReq.send();
+    console.log("sent")
+
     activeplayer = 1-activeplayer;
 
     selectX = -1

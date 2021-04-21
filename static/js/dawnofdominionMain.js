@@ -3,6 +3,16 @@
 
 Changelog
 
+Version 0.3
+2021/04/20
+- Fixed scrolling issues
+- Everything is on Flask now!
+
+Version 0.2.1
+2021/04/15
+- Hiding Images
+- Added click aesthetics
+
 Version 0.2
 2020/06/02
 - Very basic turn strategy added
@@ -92,11 +102,11 @@ function draw() {
 }
 
 function mousepos(e){
-    var relX = e.clientX - gameboard.canvas.offsetLeft - INITIAL_X*gameboard.canvas.height + document.body.scrollLeft
-    var relY = e.clientY- gameboard.canvas.offsetTop - INITIAL_Y*gameboard.canvas.height + document.body.scrollTop
+    var relX = e.clientX - gameboard.canvas.offsetLeft - INITIAL_X*gameboard.canvas.height + window.scrollX
+    var relY = e.clientY- gameboard.canvas.offsetTop - INITIAL_Y*gameboard.canvas.height + window.scrollY
 
-    mouseX = e.clientX - gameboard.canvas.offsetLeft + document.body.scrollLeft
-    mouseY = e.clientY- gameboard.canvas.offsetTop + document.body.scrollTop
+    mouseX = e.clientX - gameboard.canvas.offsetLeft + window.scrollX
+    mouseY = e.clientY- gameboard.canvas.offsetTop + window.scrollY
 
     var grid = 0;
 
@@ -118,8 +128,8 @@ function mousepos(e){
 
 function click(e)  {
     // handles clicking of a button
-    var relX = e.clientX - gameboard.canvas.offsetLeft - INITIAL_X*gameboard.canvas.height + document.body.scrollLeft
-    var relY = e.clientY- gameboard.canvas.offsetTop - INITIAL_Y*gameboard.canvas.height + document.body.scrollTop
+    var relX = e.clientX - gameboard.canvas.offsetLeft - INITIAL_X*gameboard.canvas.height + window.scrollX
+    var relY = e.clientY- gameboard.canvas.offsetTop - INITIAL_Y*gameboard.canvas.height + window.scrollY
 
     var grid = 0;
 
@@ -153,6 +163,15 @@ function keydown(event) {
     }
 }
 
+
+// mouse down detection
+var mouseDown = 0;
+document.body.onmousedown = function() { 
+  ++mouseDown;
+}
+document.body.onmouseup = function() {
+  --mouseDown;
+}
 
 
 

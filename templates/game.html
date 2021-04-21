@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Dawn of Dominion v0.2.1</title>
+        <link rel="icon" href="static/resources/icon.ico" />
+        <style>
+            canvas {
+                border: 1px solid #d3d3d3;
+                background-color: #f1f1f1;
+            }
+        </style>
+    </head>
+    
+    <body onload="startGame()">
+
+        <img id="equanostank" src="static/resources/EquanosTank.png" hidden="true">
+        <img id="equanosship" src="static/resources/EquanosShip.png" hidden="true">
+
+
+        <script src="{{ url_for('static', filename="js/classes.js") }}"></script>
+        <script src="{{ url_for('static', filename="js/cfg.js") }}"></script>
+        <script src="{{ url_for('static', filename="js/dawnofdominionMain.js") }}"></script>
+    </body>
+</html>
