@@ -16,11 +16,12 @@ def play():
     return "put name here"
 
 
-@app.route('/move')
+@app.route('/move', methods=["POST"])
 def move():
-    name = request.args.get('msg')
-    print(name)
-    return name
+    movedata = request.json
+    movedata["verified"] = True
+    print(movedata)
+    return movedata
 
 
 if __name__ == '__main__':

@@ -205,14 +205,16 @@ class TextBx extends Component {
 function nextturn() {
 
     function reqListener () {
-        alert("It is now Player" + (activeplayer+1) + "'s Turn. Server says: " + this.responseText)
+        alert("Server says: " + this.responseText)
     }
     
     var oReq = new XMLHttpRequest();
     oReq.addEventListener("load", reqListener);
-    oReq.open("GET", "/move?msg=hello");
-    oReq.send();
-    console.log("sent")
+    oReq.open("POST", "/move");
+    oReq.setRequestHeader('Content-Type', 'application/json');
+    oReq.send(JSON.stringify({
+        yeet: "yee"
+    }));
 
     activeplayer = 1-activeplayer;
 
