@@ -1,0 +1,19 @@
+{
+    "units": [
+        {
+            "name": "Equanos Tank",
+            "description": "The Equanos are focused on maintaining a balance in everything - this tank is no exception.",
+            "ATK": 50,
+            "DEF": 15,
+            "CHP": 100,
+            "MHP": 100,
+            "TER": "ground",
+            "sprite_location": "resources/"
+        }
+    ],
+
+    "maps": [
+
+    ]
+
+}

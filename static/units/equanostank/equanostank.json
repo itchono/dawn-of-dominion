@@ -1,0 +1,12 @@
+{
+    "name": "Equanos Tank",
+    "id": "equanostank",
+    "description": "The Equanos are focused on maintaining a balance in everything - this tank is no exception.",
+    "cost": 500,
+    "ATK": 50,
+    "DEF": 15,
+    "CHP": 100,
+    "MHP": 100,
+    "TER": "ground",
+    "sprite_location": "EquanosTank.png"
+}

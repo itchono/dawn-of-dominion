@@ -1,0 +1,12 @@
+{
+    "name": "Umbra Ghost",
+    "id": "umbratank",
+    "description": "The Infernus put aggression as a priority, but are no slouch on defenses either.",
+    "cost": 500,
+    "ATK": 70,
+    "DEF": 10,
+    "CHP": 70,
+    "MHP": 70,
+    "TER": "ground",
+    "sprite_location": "UmbraTank.png"
+}

@@ -27,6 +27,22 @@ Version 0.1
 - Added button arrays
 */
 
+
+// CONSTANTS
+const BOARD_SIZE_FACTOR = 0.75
+const BUTTON_SIZE = 0.08
+const BUTTON_PADDING = 0.005
+const GRID_SIZE = 7
+const BUTTON_STEP = BUTTON_PADDING + BUTTON_SIZE
+const GRID_SPACE = 0.2
+
+const NEXT_GRID_START = GRID_SPACE+GRID_SIZE*BUTTON_STEP
+
+const INITIAL_X = 0.15
+const INITIAL_Y = 0.3
+
+TEAM_COLOURS = ["CORNFLOWERBLUE", "ORANGERED"]
+
 var remainingunits = 5 // TODO implement
 
 var mouseX
@@ -50,23 +66,35 @@ var activeplayer = 0
 
 var turnnumber = 0
 
-function startGame() {
+// Unit Data Store
+var spritemap = {}
+var units = {}
 
+function startGame(gamedata) {
 
-    
+    console.log(gamedata)
+
+    shopbuttons = []
+
+    for (i in gamedata) {
+        var image = new Image()
+        image.src = "data:image/png;base64," + gamedata[i].sprite
+        spritemap[gamedata[i].id] = image
+        units[gamedata[i].id] = gamedata[i]
+
+        shopbuttons = shopbuttons.concat(new ShopItem(0.85 + Math.floor(i/8) * 0.05, 0.1 + 0.1 * (i % 8), "#3c3c3c", "orange", gamedata[i]))
+    }
+
     document.addEventListener("click", click); // add event
 
     gameboard = new Gameboard();
 
-    tx = new TextBx(0.5, 0.9, "Current Square: ", "grey");
-    statustxt = new TextBx(0.15, 0.1, "Turn 1: Placing Units", "grey");
-    turntxt = new TextBx(0.15, 0.15, "Player 1's Turn", "grey");
+    tx = new TextBx(0.1, 0.9, "Current Square: ", "white", "left");
+    statustxt = new TextBx(0.05, 0.1, "Turn 1: Placing Units", "white", "left");
+    turntxt = new TextBx(0.05, 0.15, "Player 1's Turn", "white", "left");
 
     nextbutton = new UIButton(0.06, 0.04, 0.3, 0.1, "Next Turn", "darkgrey", "black", nextturn)
     firebutton = new UIButton(0.06, 0.04, 0.4, 0.1, "FIRE", "darkgrey", "black", fire)
-
-    equanosbutton = new ShopItem(0.06, 0.08, 0.9, 0.3, "1200", "darkgrey", "black", "equanosship")
-    equanosbutton2 = new ShopItem(0.06, 0.08, 0.9, 0.4, "800", "darkgrey", "black", "equanostank")
 
     gamebuttons = new Array(2)
     for (var grid = 0; grid < 2; grid++) {
@@ -97,8 +125,9 @@ function draw() {
     turntxt.update()
     firebutton.update()
 
-    equanosbutton.update()
-    equanosbutton2.update()
+    for (i in shopbuttons) {
+        shopbuttons[i].update()
+    }
 }
 
 function mousepos(e){
@@ -119,8 +148,16 @@ function mousepos(e){
     var indY = Math.floor(relY/(BUTTON_STEP*gameboard.canvas.height))
 
     if (indX >= 0 && indX < GRID_SIZE && indY >= 0 && indY < GRID_SIZE) {
+        // Grid Stats
 
-        var st = "Current Square: Grid " + Math.abs(activeplayer-grid) + " (" + indX + "," + indY + ")";
+        var cell = gamebuttons[Math.abs(activeplayer-grid)][indX][indY]
+
+        if (cell.unit) {
+            var st = cell.unit.name + ": Current HP = " + cell.unit.CHP;
+        }
+        else {
+            var st = "Current Square: Grid " + Math.abs(activeplayer-grid) + " (" + indX + "," + indY + ")";
+        }
 
         tx.text = st
     }
@@ -151,8 +188,9 @@ function click(e)  {
 
     firebutton.click()
 
-    equanosbutton.click()
-    equanosbutton2.click()
+    for (i in shopbuttons) {
+        shopbuttons[i].click()
+    }
 
     
 }

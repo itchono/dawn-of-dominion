@@ -1,19 +1,17 @@
 from flask import Flask, request, render_template
+from gamelogic import units
 
 app = Flask(__name__)
 
-name = ""
 
 @app.route('/')
 def index():
-    return render_template('game.html')
+    return render_template('splash.html')
+
 
 @app.route('/play')
 def play():
-    global name
-    name = request.args.get('username')
-    print(name)
-    return "put name here"
+    return render_template('game.html', gamedata=units)
 
 
 @app.route('/move', methods=["POST"])

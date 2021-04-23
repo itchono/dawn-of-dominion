@@ -64,7 +64,7 @@ class Gamebutton extends Component {
         this.indy = indy;
 
         this.revealed = false
-        this.unitID = ""
+        this.unit = null
 
         this.state = "empty"
     }
@@ -76,9 +76,9 @@ class Gamebutton extends Component {
         if (mouseX > this.posx && mouseX < this.posx+this.width && mouseY > this.posy && mouseY < this.posy+this.height) {
             
             if (mouseDown) {
-                ctx.fillStyle = "lightgray"
+                ctx.fillStyle = "darkgray"
             } else {
-                ctx.fillStyle = "gold"
+                ctx.fillStyle = "lightgray"
             }
         }
         else if (selectX == this.indx && selectY == this.indy && this.team == activeplayer) {
@@ -99,8 +99,8 @@ class Gamebutton extends Component {
                     this.width, 
                     this.height);
 
-        if (this.unitID != "" && (this.revealed || this.team == activeplayer)) {
-            ctx.drawImage(document.getElementById(this.unitID), this.posx, this.posy, this.width, this.height)
+        if (this.unit && (this.revealed || this.team == activeplayer)) {
+            ctx.drawImage(spritemap[this.unit.id], this.posx, this.posy, this.width, this.height)
         }
     }
 
@@ -125,11 +125,11 @@ class Gamebutton extends Component {
 
                 if (this.state == "empty" && selectedUNIT != "") {
                     this.state = "clicked"
-                    this.unitID = selectedUNIT
+                    this.unit = units[selectedUNIT]
                 }
                 else {
                     this.state = "empty"
-                    this.unitID = ""
+                    this.unit = ""
                 }
 
             }
@@ -163,7 +163,11 @@ class UIButton extends Component {
         var ctx = gameboard.context;
 
         if (mouseX > this.posx && mouseX < this.posx+this.width && mouseY > this.posy && mouseY < this.posy+this.height) {
-            ctx.fillStyle = "white"
+            if (mouseDown) {
+                ctx.fillStyle = "darkgray"
+            } else {
+                ctx.fillStyle = "lightgray"
+            }
         }
         else {
             ctx.fillStyle = this.color
@@ -172,6 +176,7 @@ class UIButton extends Component {
         ctx.fillRect(this.posx, this.posy, this.width, this.height)
         ctx.fillStyle = this.textcolor
         ctx.font = "12px Arial";
+        ctx.textAlign = "center"
         ctx.fillText(this.text, this.posx+this.width/2, this.posy + this.height*2/3);
     }
 
@@ -187,15 +192,16 @@ class UIButton extends Component {
 }
 
 class TextBx extends Component {
-    constructor(x, y, text, color) {
+    constructor(x, y, text, color, align) {
         super(0, 0, color, x, y);
         this.text = text;
+        this.align = align
     }
 
     update() {
         var ctx = gameboard.context;
         ctx.fillStyle = this.color
-        ctx.textAlign = "center"
+        ctx.textAlign = this.align
         ctx.font = "30px Arial";
         ctx.fillText(this.text, this.posx, this.posy);
     }
@@ -234,7 +240,7 @@ function nextturn() {
 }
 
 function fire() {
-    if (gamebuttons[1-activeplayer][tgtX][tgtY].unitID != "") {
+    if (gamebuttons[1-activeplayer][tgtX][tgtY].unit) {
         alert("HIT!")
         gamebuttons[1-activeplayer][tgtX][tgtY].revealed = true
 
@@ -254,37 +260,43 @@ class Shop {
 
 class ShopItem extends Component {
 
-    constructor(w, h, x, y, text, color, textcolor, unit) {
-        super(w, h, color, x, y);
-        this.text = text;
+    constructor(x, y, color, textcolor, unit) {
+
+        super(60, 60, color, x, y);
+        
         this.textcolor = textcolor
-        this.unitID = unit
+        this.unit = unit
     }
 
     update() {
         var ctx = gameboard.context;
 
-        if (mouseX > this.posx && mouseX < this.posx+this.width && mouseY > this.posy && mouseY < this.posy+this.height) {
-            ctx.fillStyle = "white"
+        if (mouseX > this.posx && mouseX < this.posx+this.w && mouseY > this.posy && mouseY < this.posy+this.h) {
+            ctx.fillStyle = "lightgreen"
         }
-        else if (selectedUNIT == this.unitID) {
+        else if (selectedUNIT === this.unit.id) {
             ctx.fillStyle = "green"
         }
         else {
             ctx.fillStyle = this.color
         }
     
-        ctx.fillRect(this.posx, this.posy, this.width, this.height)
-        ctx.drawImage(document.getElementById(this.unitID), this.posx, this.posy, this.height, this.height)
+        ctx.fillRect(this.posx, this.posy, this.w, this.h)
+
+        if (spritemap[this.unit.id]) {
+            // wait for sprite to load
+            ctx.drawImage(spritemap[this.unit.id], this.posx, this.posy, this.h, this.h)
+        }
         ctx.fillStyle = this.textcolor
         ctx.font = "12px Arial";
-        ctx.fillText(this.text, this.posx+this.width/2, this.posy + this.height*2/3);
+        ctx.textAlign = "left"
+        ctx.fillText(this.unit.cost, this.posx+this.w*1/6, this.posy + this.h*1/6);
     }
 
     click() {
 
-        if (mouseX > this.posx && mouseX < this.posx+this.width && mouseY > this.posy && mouseY < this.posy+this.height) {
-            selectedUNIT = this.unitID
+        if (mouseX > this.posx && mouseX < this.posx+this.w && mouseY > this.posy && mouseY < this.posy+this.h) {
+            selectedUNIT = this.unit.id
         }
         
     }
