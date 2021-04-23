@@ -38,19 +38,18 @@ const GRID_SPACE = 0.2
 
 const NEXT_GRID_START = GRID_SPACE+GRID_SIZE*BUTTON_STEP
 
-const INITIAL_X = 0.15
-const INITIAL_Y = 0.3
-
-TEAM_COLOURS = ["CORNFLOWERBLUE", "ORANGERED"]
+const INITIAL_X = 0.12
+const INITIAL_Y = 0.2
 
 var remainingunits = 5 // TODO implement
 
 var mouseX
 var mouseY
 
+// Board components
 var gameboard
-var gamebuttons
-var nextbutton
+var shop
+var showshop = false
 
 // combat
 var selectX
@@ -59,11 +58,7 @@ var selectY
 var tgtX
 var tgtY
 
-// shopping
-var selectedUNIT = ""
-
 var activeplayer = 0
-
 var turnnumber = 0
 
 // Unit Data Store
@@ -74,59 +69,33 @@ function startGame(gamedata) {
 
     console.log(gamedata)
 
-    shopbuttons = []
+    shop = new Shop();
 
     for (i in gamedata) {
         var image = new Image()
         image.src = "data:image/png;base64," + gamedata[i].sprite
+
+        // populate sprite map and unit dictionary
         spritemap[gamedata[i].id] = image
         units[gamedata[i].id] = gamedata[i]
 
-        shopbuttons = shopbuttons.concat(new ShopItem(0.85 + Math.floor(i/8) * 0.05, 0.1 + 0.1 * (i % 8), "#3c3c3c", "orange", gamedata[i]))
+        // add shop buttons
+        shop.buttons = shop.buttons.concat(new ShopItem(0.85 + Math.floor(i/8) * 0.05, 0.1 + 0.1 * (i % 8), "#3c3c3c", "orange", gamedata[i]))
     }
 
     document.addEventListener("click", click); // add event
 
     gameboard = new Gameboard();
-
-    tx = new TextBx(0.1, 0.9, "Current Square: ", "white", "left");
-    statustxt = new TextBx(0.05, 0.1, "Turn 1: Placing Units", "white", "left");
-    turntxt = new TextBx(0.05, 0.15, "Player 1's Turn", "white", "left");
-
-    nextbutton = new UIButton(0.06, 0.04, 0.3, 0.1, "Next Turn", "darkgrey", "black", nextturn)
-    firebutton = new UIButton(0.06, 0.04, 0.4, 0.1, "FIRE", "darkgrey", "black", fire)
-
-    gamebuttons = new Array(2)
-    for (var grid = 0; grid < 2; grid++) {
-        gamebuttons[grid] = new Array(6)
-        for (var x = 0; x < GRID_SIZE; x++) {
-            gamebuttons[grid][x] = new Array(6)
-            for (var y = 0; y < GRID_SIZE; y++) { 
-                gamebuttons[grid][x][y] = new Gamebutton(BUTTON_SIZE, BUTTON_SIZE, "grey", x, y, grid)
-            }
-        }
-    } 
+    
     
     document.addEventListener('keydown',keydown)
 }
 
 function draw() {
-    gameboard.clear()
-    for (var grid = 0; grid < 2; grid++) {
-        for (var x = 0; x < 6; x++) {
-            for (var y = 0; y < 6; y++) { 
-                gamebuttons[grid][x][y].update()
-            }
-        }
-    }
-    tx.update()
-    nextbutton.update()
-    statustxt.update()
-    turntxt.update()
-    firebutton.update()
+    gameboard.draw()
 
-    for (i in shopbuttons) {
-        shopbuttons[i].update()
+    if (showshop) {
+        shop.draw()
     }
 }
 
@@ -150,16 +119,15 @@ function mousepos(e){
     if (indX >= 0 && indX < GRID_SIZE && indY >= 0 && indY < GRID_SIZE) {
         // Grid Stats
 
-        var cell = gamebuttons[Math.abs(activeplayer-grid)][indX][indY]
+        var cell = gameboard.buttons[Math.abs(activeplayer-grid)][indX][indY]
 
-        if (cell.unit) {
-            var st = cell.unit.name + ": Current HP = " + cell.unit.CHP;
-        }
-        else {
-            var st = "Current Square: Grid " + Math.abs(activeplayer-grid) + " (" + indX + "," + indY + ")";
+        var st = "Current Square: Grid " + Math.abs(activeplayer-grid) + " (" + indX + "," + indY + ")";
+
+        if (cell.unit && (cell.revealed || cell.team == activeplayer)) {
+            st += "<br>" + cell.unit.name + ": Current HP = " + cell.unit.CHP + "<br>" + cell.unit.description;
         }
 
-        tx.text = st
+        document.getElementById("infotext").innerHTML = st
     }
 }
 
@@ -179,20 +147,12 @@ function click(e)  {
     var indY = Math.floor(relY/(BUTTON_STEP*gameboard.canvas.height))
 
     if (indX >= 0 && indX < GRID_SIZE && indY >= 0 && indY < GRID_SIZE) {
-        gamebuttons[Math.abs(activeplayer-grid)][indX][indY].click()
-
-        // var st = "Clicked on button: Grid " + Math.abs(activeplayer-grid) + " (" + indX + "," + indY + ")";
-
-    }
-    nextbutton.click()
-
-    firebutton.click()
-
-    for (i in shopbuttons) {
-        shopbuttons[i].click()
+        gameboard.buttons[Math.abs(activeplayer-grid)][indX][indY].click()
     }
 
-    
+    if (showshop) {
+        shop.click()
+    }
 }
 
 function keydown(event) {
@@ -200,7 +160,6 @@ function keydown(event) {
         nextturn()
     }
 }
-
 
 // mouse down detection
 var mouseDown = 0;

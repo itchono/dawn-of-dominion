@@ -2,12 +2,29 @@
 <html lang="en" dir="ltr">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <title>Dawn of Dominion v0.3</title>
+        <title>Dawn of Dominion v0.4</title>
         <link rel="icon" href="static/resources/icon.ico" />
         <style>
+            .canvas-container{
+                position: relative;
+                width: 1280px;
+                height: 720px;
+                background-color: #222222;   
+            }
+            button {
+                position:absolute;
+                font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+                font-size: medium;
+            }
             canvas {
-                border: 1px solid #d3d3d3;
+                position: absolute;
                 background-color: #222222;
+            }
+            p {
+                position: absolute;
+                font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+                font-size: larger;
+                color: white;
             }
         </style>
     </head>
@@ -16,10 +33,25 @@
     </script>
     
     <body onload="startGame(gamedata)">
+        
+        <div class="canvas-container" id="gamecontainer">
+            <button id="fire" onclick="clickfire()" style="left: 60%; top:10%" disabled>FIRE</button> 
+            <button id="doneplacing" onclick="clickdoneplacing()" style="left: 40%; top:10%">Done Placing</button>
+            <button id="nextturn" onclick="clicknextturn()" style="left: 50%; top:10%" disabled>Next Turn</button>
+            <button id="shop" onclick="clickshop()" style="right: 5%; top:10%">Shop</button>
+            
+            <p id="statusindicator" style="left: 3%; top: 4%">Turn 1: Construction</p>
+            <p id="turnindicator" style="left: 3%; top:8%">Player 1's Turn</p>
+
+            <p id="infotext" style="left: 5%; top: 70%">Current Square:</p>
+            
+        </div>
+
         <img src="static/resources/BG_Gliese.png" hidden="true" id="gliese">
 
 
         <script src="{{ url_for('static', filename="js/classes.js") }}"></script>
+        <script src="{{ url_for('static', filename="js/buttonmethods.js") }}"></script>
         <script src="{{ url_for('static', filename="js/dawnofdominionMain.js") }}"></script>
     </body>
 </html>
