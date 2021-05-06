@@ -1,0 +1,12 @@
+{
+    "name": "Equanos Flagship",
+    "id": "equanosship",
+    "description": "A powerful battleship equipped with the Equanos' finest cannons.",
+    "cost": 1700,
+    "ATK": 70,
+    "DEF": 50,
+    "CHP": 90,
+    "MHP": 90,
+    "TER": "water",
+    "sprite_location": "equanos_ship.png"
+}

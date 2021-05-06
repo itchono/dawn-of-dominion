@@ -1,0 +1,12 @@
+{
+    "name": "Infernus Obelisk",
+    "id": "infernusship",
+    "description": "The pinnacle in weaponry -- armed with the most powerful weapons systems known.",
+    "cost": 1600,
+    "ATK": 100,
+    "DEF": 40,
+    "CHP": 80,
+    "MHP": 80,
+    "TER": "water",
+    "sprite_location": "infernus_ship.png"
+}

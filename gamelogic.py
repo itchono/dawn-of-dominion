@@ -14,15 +14,15 @@ gamelogger.addHandler(c_handler)
 # LOAD ASSETS
 _, unitnames, _ = next(os.walk("static/units"))
 units: list = []
+sprites = {}
 
 for unit in unitnames:
     try:
         with open(f"static/units/{unit}/{unit}.json", "rb") as f:
             unitdata = json.load(f)
-
             try:
                 with open(f"static/units/{unit}/{unitdata['sprite_location']}", "rb") as f:
-                    unitdata["sprite"] = base64.b64encode(f.read()).decode("utf-8")
+                    sprites[unitdata["id"]] = base64.b64encode(f.read()).decode("utf-8")
             except OSError as e:
                 gamelogger.exception(
                     f"Could not read sprite for: {unit}", exc_info=e)            
@@ -33,9 +33,16 @@ for unit in unitnames:
 
 gamelogger.info(f"{len(units)} units loaded.")
 
+# LOAD MAPS
+with open("static/gamedata.json", "rb") as f:
+    mapdata = json.load(f)
 
-class Game:
-    # Primary game object 
 
-    def __init__(self) -> None:
-        pass
+def process_move(movedata: dict) -> str:
+    buttons = movedata["buttons"]
+    for i in range(0, 2):
+        for x in range(len(buttons[0])):
+            for y in range(len(buttons[0])):
+                if buttons[i][x][y]["data"]["unit"]:
+                    buttons[i][x][y]["data"]["unit"]["CHP"] -= 5
+    return json.dumps(movedata)

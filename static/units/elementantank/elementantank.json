@@ -1,12 +1,12 @@
 {
     "name": "Elementan Walker",
     "id": "elementantank",
-    "description": "The Infernus put aggression as a priority, but are no slouch on defenses either.",
-    "cost": 500,
-    "ATK": 70,
-    "DEF": 10,
-    "CHP": 70,
-    "MHP": 70,
+    "description": "The Elementan have a profound connection with defense and shield strength.",
+    "cost": 525,
+    "ATK": 30,
+    "DEF": 20,
+    "CHP": 120,
+    "MHP": 120,
     "TER": "ground",
     "sprite_location": "ElementanTank.png"
 }

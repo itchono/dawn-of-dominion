@@ -2,7 +2,7 @@
     "name": "Infernus Self-Propelled Artillery",
     "id": "infernustank",
     "description": "The Infernus put aggression as a priority, but are no slouch on defenses either.",
-    "cost": 500,
+    "cost": 550,
     "ATK": 70,
     "DEF": 10,
     "CHP": 70,

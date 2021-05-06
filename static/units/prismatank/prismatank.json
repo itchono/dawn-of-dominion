@@ -1,0 +1,12 @@
+{
+    "name": "Prisma Crystal",
+    "id": "prismatank",
+    "description": "This tank is little more than a modified Prisma Accelerator on treads. Be careful to not sneeze too hard around it!",
+    "cost": 600,
+    "ATK": 80,
+    "DEF": 10,
+    "CHP": 20,
+    "MHP": 20,
+    "TER": "ground",
+    "sprite_location": "prisma_tank.png"
+}

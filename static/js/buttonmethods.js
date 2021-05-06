@@ -1,7 +1,17 @@
 function clicknextturn() {
 
     function reqListener () {
-        alert("Server says: " + this.responseText)
+        // on response
+        var parseddata = JSON.parse(this.responseText)
+
+        for (var grid = 0; grid < 2; grid++) {
+            for (var x = 0; x < GRID_SIZE; x++) {
+                for (var y = 0; y < GRID_SIZE; y++) { 
+                    gameboard.buttons[grid][x][y].data = parseddata.buttons[grid][x][y].data
+                }
+            }
+        } 
+        
     }
     
     var oReq = new XMLHttpRequest();
@@ -9,7 +19,8 @@ function clicknextturn() {
     oReq.open("POST", "/move");
     oReq.setRequestHeader('Content-Type', 'application/json');
     oReq.send(JSON.stringify({
-        yeet: "yee"
+        yeet: "yee",
+        buttons: gameboard.buttons
     }));
 
     activeplayer = 1-activeplayer;
@@ -18,6 +29,7 @@ function clicknextturn() {
     selectY = -1
     tgtY = -1
     tgtX = -1
+    fired = false
 
     if (activeplayer == 0) {
         document.getElementById("turnindicator").innerHTML = "Player 1's Turn"
@@ -28,8 +40,6 @@ function clicknextturn() {
         document.getElementById("turnindicator").innerHTML = "Player 2's Turn"
     }
     if (turnnumber > 0) {
-        // enable fire button
-        document.getElementById("fire").removeAttribute("disabled")
 
         if (activeplayer === 0) {
             document.getElementById("doneplacing").setAttribute("hidden", "true")
@@ -45,16 +55,19 @@ function clicknextturn() {
 }
 
 function clickfire() {
-    if (gameboard.buttons[1-activeplayer][tgtX][tgtY].unit) {
-        alert("HIT!")
-        gameboard.buttons[1-activeplayer][tgtX][tgtY].revealed = true
+    fired = true
+    if (gameboard.buttons[1-activeplayer][tgtX][tgtY].data.unit) {
+        gameboard.buttons[1-activeplayer][tgtX][tgtY].data.revealed = true
 
-        gameboard.buttons[1-activeplayer][tgtX][tgtY].unit.CHP -= 10
-
+        if (gameboard.buttons[activeplayer][selectX][selectY].data.unit) {
+            var amount = gameboard.buttons[1-activeplayer][tgtX][tgtY].damage(gameboard.buttons[activeplayer][selectX][selectY].data.unit)
+            document.getElementById("statusindicator").innerHTML = "Shot hit for " + amount + " damage!"
+        }
+        
     }
     else {
-        alert("MISS!")
-        gameboard.buttons[1-activeplayer][tgtX][tgtY].color = "white"
+        document.getElementById("statusindicator").innerHTML = "Shot Missed."
+        gameboard.buttons[1-activeplayer][tgtX][tgtY].data.state = "missed"
     }
 
     document.getElementById("nextturn").removeAttribute("disabled")

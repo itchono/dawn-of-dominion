@@ -1,5 +1,5 @@
 class Gameboard {
-    constructor() {
+    constructor(mapdata) {
         this.canvas = document.createElement("canvas")
         // this.canvas.width = window.innerWidth * BOARD_SIZE_FACTOR;
         // this.canvas.height = window.innerHeight * BOARD_SIZE_FACTOR;
@@ -20,11 +20,11 @@ class Gameboard {
 
         this.buttons = new Array(2)
         for (var grid = 0; grid < 2; grid++) {
-            this.buttons[grid] = new Array(6)
+            this.buttons[grid] = new Array(GRID_SIZE)
             for (var x = 0; x < GRID_SIZE; x++) {
-                this.buttons[grid][x] = new Array(6)
+                this.buttons[grid][x] = new Array(GRID_SIZE)
                 for (var y = 0; y < GRID_SIZE; y++) { 
-                    this.buttons[grid][x][y] = new Gamebutton(BUTTON_SIZE, BUTTON_SIZE, "grey", x, y, grid)
+                    this.buttons[grid][x][y] = new Gamebutton(BUTTON_SIZE, BUTTON_SIZE, x, y, grid, mapdata["maps"][0]["terrain"][y][x])
                 }
             }
         } 
@@ -33,8 +33,8 @@ class Gameboard {
     draw() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height); // clears the canvas for redraw
         for (var grid = 0; grid < 2; grid++) {
-            for (var x = 0; x < 6; x++) {
-                for (var y = 0; y < 6; y++) { 
+            for (var x = 0; x < GRID_SIZE; x++) {
+                for (var y = 0; y < GRID_SIZE; y++) { 
                     this.buttons[grid][x][y].update()
                 }
             }
@@ -80,17 +80,38 @@ class Component {
 }
 
 class Gamebutton extends Component {
-    constructor(w, h, color, indx, indy, team) {
-        super(w, h, color, 0, 0);
-        this.team = team;
-        this.indx = indx;
-        this.indy = indy;
-
-        this.revealed = false
-        this.unit = null
-
-        this.state = "empty"
+    constructor(w, h, indx, indy, team, terrain) {
+        super(w, h, "grey", 0, 0);
+        this.data = {
+            team: team,
+            indx: indx,
+            indy: indy,
+            revealed: false,
+            unit: null,
+            terrain: terrain,
+            state: "empty"
+        }
     }
+    damage(unit) {
+        // Damage the unit from an enemy attack
+        var postmitigation = unit.ATK - this.data.unit.DEF
+
+        if (postmitigation > 0) {
+
+            console.log("Incoming Damage: " + unit.ATK + "\nTaken Damage: " + postmitigation)
+            this.data.unit.CHP -= postmitigation
+
+            if (this.data.unit.CHP < 0) {
+                this.data.unit.CHP = 0
+            }
+
+        }   else {
+            console.log("Incoming Damage: " + unit.ATK + "\nAll damage mitigated")
+        }
+        return postmitigation
+    }
+
+
     update() {
         
         var ctx = gameboard.context;
@@ -104,18 +125,20 @@ class Gamebutton extends Component {
                 ctx.fillStyle = "lightgray"
             }
         }
-        else if (selectX == this.indx && selectY == this.indy && this.team == activeplayer) {
-            ctx.fillStyle = "green"
+        else if (selectX == this.data.indx && selectY == this.data.indy && this.data.team == activeplayer) {
+            ctx.fillStyle = "orange"
         }
-        
-        else if (this.state == "clicked" && (this.revealed || this.team == activeplayer)){
-            ctx.fillStyle = "rgb("+ Math.round(255 * (1-this.unit.CHP/this.unit.MHP)) + "," + Math.round(255 * (this.unit.CHP/this.unit.MHP)) + ",0)"
+        else if (this.data.state == "missed") {
+            ctx.fillStyle = "white"
         }
-        else if (tgtX == this.indx && tgtY == this.indy && this.team == 1-activeplayer) {
+        else if (tgtX == this.data.indx && tgtY == this.data.indy && this.data.team == 1-activeplayer) {
             ctx.fillStyle = "red"
         }
+        else if (this.data.state == "occupied" && (this.data.revealed || this.data.team == activeplayer)){
+            ctx.fillStyle = "rgb("+ Math.round(255 * (1-this.data.unit.CHP/this.data.unit.MHP)) + "," + Math.round(150 * (this.data.unit.CHP/this.data.unit.MHP)) + ",0)"
+        }
         else {
-            ctx.fillStyle = this.color;
+            ctx.fillStyle = TERRAINCOLOUR[this.data.terrain]
         }
         
         ctx.fillRect(this.posx, 
@@ -123,8 +146,8 @@ class Gamebutton extends Component {
                     this.width, 
                     this.height);
 
-        if (this.unit && (this.revealed || this.team == activeplayer)) {
-            ctx.drawImage(spritemap[this.unit.id], this.posx, this.posy, this.width, this.height)
+        if (this.data.unit && (this.data.revealed || this.data.team == activeplayer)) {
+            ctx.drawImage(spritemap[this.data.unit.id], this.posx, this.posy, this.width, this.height)
         }
     }
 
@@ -134,41 +157,49 @@ class Gamebutton extends Component {
     }
 
     get posx() {
-        return (this.indx*BUTTON_STEP+INITIAL_X+(NEXT_GRID_START)*Math.abs(this.team-activeplayer))*gameboard.canvas.height
+        return (this.data.indx*BUTTON_STEP+INITIAL_X+(NEXT_GRID_START)*Math.abs(this.data.team-activeplayer))*gameboard.canvas.height
     }
 
     get posy() {
-        return (this.indy*BUTTON_STEP+INITIAL_Y)*gameboard.canvas.height
+        return (this.data.indy*BUTTON_STEP+INITIAL_Y)*gameboard.canvas.height
     }
 
     click() {
 
-        if (this.team == activeplayer) {
+        if (this.data.team == activeplayer) {
 
             if (turnnumber == 0) {
-                if (this.state == "empty" && shop.selectedUNIT) {
-                    this.state = "clicked"
-                    this.unit = Object.create(units[shop.selectedUNIT])
+                if (this.data.state == "empty" && shop.selectedUNIT) {
+                    this.data.state = "occupied"
+                    this.data.unit = Object.assign(unitmap[shop.selectedUNIT])
                 }
                 
                 else {
-                    this.state = "empty"
-                    this.unit = ""
+                    this.data.state = "empty"
+                    this.data.unit = null
                 }
             }
 
             else {
-                if (this.team == activeplayer) {
-                    selectX = this.indx
-                    selectY = this.indy
+                if (this.data.team == activeplayer) {
+                    selectX = this.data.indx
+                    selectY = this.data.indy
+                    
+                    // toggle fire
+                    if (this.data.unit && !fired) {
+                        document.getElementById("fire").removeAttribute("disabled")
+                    }
+                    else {
+                        document.getElementById("fire").setAttribute("disabled", "true")
+                    }
                 }
 
             }
             
         }
         else {
-            tgtX = this.indx
-            tgtY = this.indy
+            tgtX = this.data.indx
+            tgtY = this.data.indy
         }
         
     }
@@ -234,6 +265,9 @@ class ShopItem extends Component {
 
         if (mouseX > this.posx && mouseX < this.posx+this.w && mouseY > this.posy && mouseY < this.posy+this.h) {
             shop.selectedUNIT = this.unit.id
+
+            var st = this.unit.name + ": Cost = " + this.unit.cost + "<br>" + this.unit.description + "<br>HP: " + this.unit.MHP + "<br>ATK: " + this.unit.ATK  + " DEF: " + this.unit.DEF;;
+            document.getElementById("infotext").innerHTML = st
         }
         
     }
