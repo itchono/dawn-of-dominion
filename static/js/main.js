@@ -54,11 +54,19 @@ function startGame(unitdata, mapdata, in_spritemap) {
         spritemap[unitdata[i].id] = image
         unitmap[unitdata[i].id] = unitdata[i]
 
+        if (unitdata[i].multiX && unitdata[i].multiY) {
+            for (k=0; k<unitdata[i].multiX*unitdata[i].multiY; k++) {
+                var image = new Image()
+                image.src = "data:image/png;base64," + in_spritemap[unitdata[i].id + (k+1)]
+                spritemap[unitdata[i].id + (k+1)] = image
+            }
+        } 
+
+
+
         // add shop buttons
         shop.buttons = shop.buttons.concat(new ShopItem(0.85 + Math.floor(i/8) * 0.05, 0.1 + 0.1 * (i % 8), "#3c3c3c", "orange", unitdata[i]))
     }
-
-    
 
     gamecontainer = document.getElementById("gamecontainer")
     gameboard = new Gameboard(mapdata);

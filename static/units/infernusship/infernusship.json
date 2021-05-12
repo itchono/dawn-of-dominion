@@ -8,5 +8,7 @@
     "CHP": 80,
     "MHP": 80,
     "TER": "water",
-    "sprite_location": "infernus_ship.png"
+    "sprite_location": "infernus_ship.png",
+    "multiX": 3,
+    "multiY": 1
 }

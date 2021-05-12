@@ -35,7 +35,14 @@ class Gameboard {
         for (var grid = 0; grid < 2; grid++) {
             for (var x = 0; x < GRID_SIZE; x++) {
                 for (var y = 0; y < GRID_SIZE; y++) { 
-                    this.buttons[grid][x][y].update()
+                    this.buttons[grid][x][y].drawbase()
+                }
+            }
+        }
+        for (var grid = 0; grid < 2; grid++) {
+            for (var x = 0; x < GRID_SIZE; x++) {
+                for (var y = 0; y < GRID_SIZE; y++) { 
+                    this.buttons[grid][x][y].drawunits()
                 }
             }
         }
@@ -112,7 +119,7 @@ class Gamebutton extends Component {
     }
 
 
-    update() {
+    drawbase() {
         
         var ctx = gameboard.context;
         
@@ -134,20 +141,39 @@ class Gamebutton extends Component {
         else if (tgtX == this.data.indx && tgtY == this.data.indy && this.data.team == 1-activeplayer) {
             ctx.fillStyle = "red"
         }
-        else if (this.data.state == "occupied" && (this.data.revealed || this.data.team == activeplayer)){
+        else if ((this.data.state == "occupied" || this.data.state == "multi") && (this.data.revealed || this.data.team == activeplayer)){
             ctx.fillStyle = "rgb("+ Math.round(255 * (1-this.data.unit.CHP/this.data.unit.MHP)) + "," + Math.round(150 * (this.data.unit.CHP/this.data.unit.MHP)) + ",0)"
+        
         }
         else {
             ctx.fillStyle = TERRAINCOLOUR[this.data.terrain]
         }
         
         ctx.fillRect(this.posx, 
-                    this.posy, 
-                    this.width, 
-                    this.height);
+            this.posy, 
+            this.width, 
+            this.height);
+    }
 
-        if (this.data.unit && (this.data.revealed || this.data.team == activeplayer)) {
-            ctx.drawImage(spritemap[this.data.unit.id], this.posx, this.posy, this.width, this.height)
+    drawunits() {
+        var ctx = gameboard.context;
+
+        if (this.data.state == "occupied" && (this.data.revealed || this.data.team == activeplayer)) {
+            if (this.data.unit.multiX && this.data.unit.multiY) {
+                for (var i=0; i<this.data.unit.multiX; i++) {
+                    for (var j=0; j<this.data.unit.multiY; j++) {
+
+                        ctx.drawImage(spritemap[this.data.unit.id + ((i+1)*(j+1))],
+                        gameboard.buttons[this.data.team][this.data.indx+i][this.data.indy+j].posx,
+                        gameboard.buttons[this.data.team][this.data.indx+i][this.data.indy+j].posy,
+                        gameboard.buttons[this.data.team][this.data.indx+i][this.data.indy+j].width,
+                        gameboard.buttons[this.data.team][this.data.indx+i][this.data.indy+j].height)
+                    }
+                }
+            }
+            else {
+                ctx.drawImage(spritemap[this.data.unit.id], this.posx, this.posy, this.width, this.height)
+            }
         }
     }
 
@@ -172,6 +198,18 @@ class Gamebutton extends Component {
                 if (this.data.state == "empty" && shop.selectedUNIT) {
                     this.data.state = "occupied"
                     this.data.unit = Object.assign(unitmap[shop.selectedUNIT])
+
+                    if (this.data.unit.multiX && this.data.unit.multiY) {
+                        for (var i=0; i<this.data.unit.multiX; i++) {
+                            for (var j=0; j<this.data.unit.multiY; j++) {
+                                gameboard.buttons[this.data.team][this.data.indx+i][this.data.indy+j].data.unit = this.data.unit
+
+                                if (i != 0 || j != 0) {
+                                    gameboard.buttons[this.data.team][this.data.indx+i][this.data.indy+j].data.state = "multi"
+                                }
+                            }
+                        }
+                    }
                 }
                 
                 else {

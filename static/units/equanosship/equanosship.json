@@ -8,5 +8,7 @@
     "CHP": 90,
     "MHP": 90,
     "TER": "water",
-    "sprite_location": "equanos_ship.png"
+    "sprite_location": "equanos_ship.png",
+    "multiX": 3,
+    "multiY": 1
 }
