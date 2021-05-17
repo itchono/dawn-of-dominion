@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template
-from gamelogic import units, mapdata, sprites, process_move
-from sessionmanager import Session, sessions
+from gamelogic import units, mapdata, sprites, upgrades, process_move
+from sessionmanager import Session, sessions, get_session
 
 app = Flask(__name__)
 
@@ -12,15 +12,27 @@ def index():
 
 @app.route('/play')
 def play():
-    sessions.append(Session())
-    return render_template('game.html', unitdata=units, mapdata=mapdata, spritemap=sprites)
+    curr_session = Session()
+    sessions.append(curr_session)
+    print(sessions)
+    return render_template('game.html',
+                           unitdata=units,
+                           upgradedata=upgrades,
+                           mapdata=mapdata,
+                           spritemap=sprites,
+                           id=curr_session.id)
+
+
+@app.route('/gameover')
+def gameover():
+    id = int(request.args.get('id'))
+    return render_template('gameover.html', winner=get_session(id).winner + 1)
 
 
 @app.route('/move', methods=["POST"])
 def move():
     movedata = request.json
-    movedata["verified"] = True
-    return process_move(movedata)
+    return process_move(movedata, get_session(movedata["id"]))
 
 
 if __name__ == '__main__':

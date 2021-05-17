@@ -1,0 +1,10 @@
+{
+    "name": "Prismatech Accelerator",
+    "id": "prismatechaccelerator",
+    "description": "A resonant crystal driven beam collimator capable of accelerating projectiles",
+    "cost": 1000,
+    "ATK": 50,
+    "DEF": 0,
+    "HP": 0,
+    "sprite_location": "prismatechaccelerator.png"
+}

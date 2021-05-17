@@ -36,9 +36,11 @@
         var in_spritemap = JSON.parse('{{ spritemap | tojson | safe }}')
         var unitdata = JSON.parse('{{ unitdata | tojson | safe }}')
         var mapdata = JSON.parse('{{ mapdata | tojson | safe }}')
+        var upgradedata = JSON.parse('{{ upgradedata | tojson | safe }}')
+        var id = JSON.parse('{{ id | tojson | safe }}')
     </script>
     
-    <body onload="startGame(unitdata, mapdata, in_spritemap)" style="background-color: #333333;">
+    <body onload="startGame(unitdata, upgradedata, mapdata, in_spritemap, id)" style="background-color: #333333;">
         
         <div class="canvas-container" id="gamecontainer">
             <button id="fire" onclick="clickfire()" style="left: 60%; top:5%" disabled>FIRE</button> 

@@ -1,0 +1,12 @@
+{
+    "name": "Rubble",
+    "id": "rubble",
+    "description": "It's literally just a pile of rubble. Not useful at all.",
+    "cost": 0,
+    "ATK": 0,
+    "DEF": 0,
+    "CHP": 0,
+    "MHP": 0,
+    "TER": "ground",
+    "sprite_location": "rubble.png"
+}

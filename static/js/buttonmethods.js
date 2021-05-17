@@ -11,6 +11,10 @@ function clicknextturn() {
                 }
             }
         } 
+
+        if (parseddata.gameover) {
+            window.location.href = "/gameover?id=" + gameID;
+        }
         
     }
     
@@ -19,22 +23,20 @@ function clicknextturn() {
     oReq.open("POST", "/move");
     oReq.setRequestHeader('Content-Type', 'application/json');
     oReq.send(JSON.stringify({
-        yeet: "yee",
+        id: gameID,
+        turn: turnnumber,
         buttons: gameboard.buttons
     }));
 
     activeplayer = 1-activeplayer;
-
-    selectX = -1
-    selectY = -1
-    tgtY = -1
-    tgtX = -1
     fired = false
 
     if (activeplayer == 0) {
         document.getElementById("turnindicator").innerHTML = "Player 1's Turn"
         turnnumber++
         document.getElementById("statusindicator").innerHTML = "Turn " + (turnnumber+1) + ": Combat"
+        // TRANSITION TO COMBAT
+        shop.buildUpgrades()
     }
     else {
         document.getElementById("turnindicator").innerHTML = "Player 2's Turn"
@@ -47,15 +49,14 @@ function clicknextturn() {
 
     } else {
         // enable done placing button
-        document.getElementById("shop").removeAttribute("disabled")
         document.getElementById("doneplacing").removeAttribute("disabled")
     }
+    document.getElementById("shop").removeAttribute("disabled")
 
     document.getElementById("nextturn").setAttribute("disabled", "true")
 }
 
 function clickfire() {
-    fired = true
     if (gameboard.buttons[1-activeplayer][tgtX][tgtY].data.unit) {
         gameboard.buttons[1-activeplayer][tgtX][tgtY].data.revealed = true
 
@@ -69,6 +70,13 @@ function clickfire() {
         document.getElementById("statusindicator").innerHTML = "Shot Missed."
         gameboard.buttons[1-activeplayer][tgtX][tgtY].data.state = "missed"
     }
+
+    fired = true
+    selectX = -1
+    selectY = -1
+    tgtY = -1
+    tgtX = -1
+    // reset targeting
 
     document.getElementById("nextturn").removeAttribute("disabled")
     document.getElementById("fire").setAttribute("disabled", "true")

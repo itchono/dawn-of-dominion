@@ -3,6 +3,7 @@ import os
 import json
 import base64
 import logging
+from sessionmanager import Session
 
 # SET UP LOGGER
 gamelogger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ STANDARD_FIELDS = ["name",
                    "sprite_location"]
 
 
-# LOAD ASSETS
+# LOAD UNITS
 _, unitnames, _ = next(os.walk("static/units"))
 units: list = []
 sprites = {}
@@ -48,7 +49,7 @@ for unit in unitnames:
             except OSError as e:
                 gamelogger.exception(
                     f"Could not read sprite for: {unit}", exc_info=e)
-            
+
             if all(field in unitdata.keys() for field in ["multiX", "multiY"]):
                 # Multi-grid unit
 
@@ -68,16 +69,43 @@ for unit in unitnames:
 
 gamelogger.info(f"{len(units)} units loaded.")
 
+# LOAD UPGRADES
+_, upgradenames, _ = next(os.walk("static/upgrades"))
+upgrades: list = []
+
+for upgrade in upgradenames:
+    try:
+        with open(f"static/upgrades/{upgrade}/{upgrade}.json", "rb") as f:
+            upgradedata: dict = json.load(f)
+            # Read sprites
+            try:
+                with open(f"static/upgrades/{upgrade}/{upgradedata['sprite_location']}", "rb") as f:
+                    sprites[upgradedata["id"]] = base64.b64encode(f.read()).decode("utf-8")
+            except OSError as e:
+                gamelogger.exception(
+                    f"Could not read sprite for: {upgrade}", exc_info=e)
+            upgrades.append(upgradedata)
+    except OSError as e:
+        gamelogger.exception(f"Could not read upgrade: {upgrade}", exc_info=e)
+gamelogger.info(f"{len(upgrades)} upgrades loaded.")
+
 # LOAD MAPS
 with open("static/gamedata.json", "rb") as f:
     mapdata = json.load(f)
 
 
-def process_move(movedata: dict) -> str:
+def process_move(movedata: dict, session: Session) -> str:
     buttons = movedata["buttons"]
     for i in range(0, 2):
+        unitcount = 0
         for x in range(len(buttons[0])):
             for y in range(len(buttons[0])):
                 if buttons[i][x][y]["data"]["unit"]:
                     print("I see a unit", buttons[i][x][y]["data"]["unit"]["id"])
+                if buttons[i][x][y]["data"]["state"] == "occupied":
+                    unitcount += 1
+        if unitcount == 0 and movedata["turn"] > 0:
+            print(f"player {i+1} has lost!")
+            session.winner = 1-i
+            movedata["gameover"] = True
     return json.dumps(movedata)

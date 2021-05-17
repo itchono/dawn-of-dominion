@@ -17,6 +17,7 @@ const TERRAINCOLOUR = ["MediumSeaGreen", "DodgerBlue"]
 // Globals
 var mouseX
 var mouseY
+var gameID
 
 // Board components
 var gameboard
@@ -37,12 +38,15 @@ var turnnumber = 0
 // Unit Data Store
 var spritemap = {}
 var unitmap = {}
+var upgrademap = {}
 
 // Start the Game
-function startGame(unitdata, mapdata, in_spritemap) {
+function startGame(unitdata, upgradedata, mapdata, in_spritemap, id) {
 
     console.log(unitdata);
     unitdata.sort((a, b) => (a.cost > b.cost) ? 1 : -1); // sort data
+
+    gameID = id
 
     shop = new Shop();
 
@@ -61,16 +65,20 @@ function startGame(unitdata, mapdata, in_spritemap) {
                 spritemap[unitdata[i].id + (k+1)] = image
             }
         } 
-
-
-
-        // add shop buttons
-        shop.buttons = shop.buttons.concat(new ShopItem(0.85 + Math.floor(i/8) * 0.05, 0.1 + 0.1 * (i % 8), "#3c3c3c", "orange", unitdata[i]))
     }
 
+    for (i in upgradedata) {
+        var image = new Image()
+        image.src = "data:image/png;base64," + in_spritemap[upgradedata[i].id]
+        // populate sprite map and upgrade dictionary
+        spritemap[upgradedata[i].id] = image
+        upgrademap[upgradedata[i].id] = upgradedata[i]
+    }
+
+    shop = new Shop(unitdata, upgradedata)
+    shop.buildUnits()
     gamecontainer = document.getElementById("gamecontainer")
     gameboard = new Gameboard(mapdata);
-    
     
     document.addEventListener('keydown',keydown)
 }

@@ -30,6 +30,21 @@ class Gameboard {
         } 
     }
 
+    numUnits() {
+        var count = 0
+        for (var grid = 0; grid < 2; grid++) {
+            for (var x = 0; x < GRID_SIZE; x++) {
+                for (var y = 0; y < GRID_SIZE; y++) { 
+                    if (this.buttons[grid][x][y].data.state === "occupied") {
+                        count++
+                    }
+        
+                }
+            }
+        }
+        return count
+    }
+
     draw() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height); // clears the canvas for redraw
         for (var grid = 0; grid < 2; grid++) {
@@ -108,8 +123,9 @@ class Gamebutton extends Component {
             console.log("Incoming Damage: " + unit.ATK + "\nTaken Damage: " + postmitigation)
             this.data.unit.CHP -= postmitigation
 
-            if (this.data.unit.CHP < 0) {
+            if (this.data.unit.CHP <= 0) {
                 this.data.unit.CHP = 0
+                this.data.state = "destroyed"
             }
 
         }   else {
@@ -143,7 +159,9 @@ class Gamebutton extends Component {
         }
         else if ((this.data.state == "occupied" || this.data.state == "multi") && (this.data.revealed || this.data.team == activeplayer)){
             ctx.fillStyle = "rgb("+ Math.round(255 * (1-this.data.unit.CHP/this.data.unit.MHP)) + "," + Math.round(150 * (this.data.unit.CHP/this.data.unit.MHP)) + ",0)"
-        
+        }
+        else if (this.data.state == "destroyed") {
+            ctx.fillStyle = "red"
         }
         else {
             ctx.fillStyle = TERRAINCOLOUR[this.data.terrain]
@@ -174,6 +192,9 @@ class Gamebutton extends Component {
             else {
                 ctx.drawImage(spritemap[this.data.unit.id], this.posx, this.posy, this.width, this.height)
             }
+        } else if (this.data.state == "destroyed") {
+            ctx.fillStyle = "red"
+            ctx.drawImage(spritemap["rubble"], this.posx, this.posy, this.width, this.height)
         }
     }
 
@@ -200,11 +221,18 @@ class Gamebutton extends Component {
                     this.data.unit = Object.assign(unitmap[shop.selectedUNIT])
 
                     if (this.data.unit.multiX && this.data.unit.multiY) {
+
+                        this.data.unit.parentX = this.data.indx
+                        this.data.unit.parentY = this.data.indy
+                        console.log(this.data.unit)
+
+                        // Propagate multi-unit assembly to other squares
                         for (var i=0; i<this.data.unit.multiX; i++) {
                             for (var j=0; j<this.data.unit.multiY; j++) {
                                 gameboard.buttons[this.data.team][this.data.indx+i][this.data.indy+j].data.unit = this.data.unit
 
                                 if (i != 0 || j != 0) {
+                                    // set these as multi
                                     gameboard.buttons[this.data.team][this.data.indx+i][this.data.indy+j].data.state = "multi"
                                 }
                             }
@@ -213,41 +241,65 @@ class Gamebutton extends Component {
                 }
                 
                 else {
-                    this.data.state = "empty"
-                    this.data.unit = null
+
+                    if (this.data.unit.multiX && this.data.unit.multiY) {
+                        // Propagate multi-unit assembly to other squares
+                        for (var i=0; i<this.data.unit.multiX; i++) {
+                            for (var j=0; j<this.data.unit.multiY; j++) {
+                                gameboard.buttons[this.data.team][this.data.unit.parentX+i][this.data.unit.parentY+j].data.unit = null
+                                gameboard.buttons[this.data.team][this.data.unit.parentX+i][this.data.unit.parentY+j].data.state = "empty"
+                            }
+                        }
+                    } else {
+                        this.data.state = "empty"
+                        this.data.unit = null
+                    }
                 }
             }
 
-            else {
-                if (this.data.team == activeplayer) {
-                    selectX = this.data.indx
-                    selectY = this.data.indy
-                    
-                    // toggle fire
-                    if (this.data.unit && !fired) {
-                        document.getElementById("fire").removeAttribute("disabled")
-                    }
-                    else {
-                        document.getElementById("fire").setAttribute("disabled", "true")
-                    }
-                }
-
+            else if (this.data.team == activeplayer && !fired && turnnumber > 0) {
+                selectX = this.data.indx
+                selectY = this.data.indy
+                updatefirestatus()
             }
             
         }
-        else {
+        else if (!fired && turnnumber > 0) {
             tgtX = this.data.indx
             tgtY = this.data.indy
+            updatefirestatus()
         }
-        
     }
 }
 
 
 class Shop {
-    constructor() {
+    constructor(unitdata, upgradedata) {
         this.buttons = []
         this.selectedUNIT = null
+        this.unitdata = unitdata
+        this.upgradedata = upgradedata
+
+              
+    }
+    buildUnits() {
+        // builds unit buttons
+        this.buttons = []
+
+        for (i in this.unitdata) {
+            // add shop buttons
+            this.buttons = this.buttons.concat(new ShopItemUnit(0.85 + Math.floor(i/8) * 0.05, 0.1 + 0.1 * (i % 8), "#3c3c3c", "orange", this.unitdata[i]))
+        }  
+    }
+
+    buildUpgrades() {
+        // builds upgrade buttons to replace units permenantly
+        this.buttons = []
+
+        for (i in this.upgradedata) {
+            // add shop buttons
+            this.buttons = this.buttons.concat(new ShopItemUpgrade(0.85 + Math.floor(i/8) * 0.05, 0.1 + 0.1 * (i % 8), "#3c3c3c", "orange", this.upgradedata[i]))
+        }  
     }
 
     draw() {
@@ -264,7 +316,7 @@ class Shop {
 }
 
 
-class ShopItem extends Component {
+class ShopItemUnit extends Component {
 
     constructor(x, y, color, textcolor, unit) {
 
@@ -308,6 +360,68 @@ class ShopItem extends Component {
             document.getElementById("infotext").innerHTML = st
         }
         
+    }
+
+}
+
+class ShopItemUpgrade extends Component {
+
+    constructor(x, y, color, textcolor, upgrade) {
+
+        super(60, 60, color, x, y);
+        
+        this.textcolor = textcolor
+        this.upgrade = upgrade
+    }
+
+    update() {
+        var ctx = gameboard.context;
+
+        if (mouseX > this.posx && mouseX < this.posx+this.w && mouseY > this.posy && mouseY < this.posy+this.h) {
+            ctx.fillStyle = "lightgreen"
+        }
+        else if (shop.selectedupgrade === this.upgrade.id) {
+            ctx.fillStyle = "green"
+        }
+        else {
+            ctx.fillStyle = this.color
+        }
+    
+        ctx.fillRect(this.posx, this.posy, this.w, this.h)
+
+        if (spritemap[this.upgrade.id]) {
+            // wait for sprite to load
+            ctx.drawImage(spritemap[this.upgrade.id], this.posx, this.posy, this.h, this.h)
+        }
+        ctx.fillStyle = this.textcolor
+        ctx.font = "12px Arial";
+        ctx.textAlign = "left"
+        ctx.fillText(this.upgrade.cost, this.posx+this.w*1/10, this.posy + this.h*1/6);
+    }
+
+    click() {
+
+        if (mouseX > this.posx && mouseX < this.posx+this.w && mouseY > this.posy && mouseY < this.posy+this.h) {
+            shop.selectedupgrade = this.upgrade.id
+
+            var st = this.upgrade.name + ": Cost = " + this.upgrade.cost + "<br>" + this.upgrade.description + "<br>HP: +" + this.upgrade.HP + "<br>ATK: +" + this.upgrade.ATK  + " DEF: +" + this.upgrade.DEF;
+            document.getElementById("infotext").innerHTML = st
+        }
+    }
+}
+
+function updatefirestatus() {
+    // Updates fire button
+    var selectOK = (selectX != -1 && selectY != -1 && gameboard.buttons[activeplayer][selectX][selectY].data.unit)
+    var targetOK = (tgtX != -1 && tgtY != -1)
+
+    var fire = selectOK && targetOK && !fired
+
+    if (fire) {
+        document.getElementById("fire").removeAttribute("disabled")
+    }
+    else {
+        document.getElementById("fire").setAttribute("disabled", "true")
     }
 
 }
