@@ -246,8 +246,8 @@ class Gamebutton extends Component {
                         // Propagate multi-unit assembly to other squares
                         for (var i=0; i<this.data.unit.multiX; i++) {
                             for (var j=0; j<this.data.unit.multiY; j++) {
-                                gameboard.buttons[this.data.team][this.data.unit.parentX+i][this.data.unit.parentY+j].data.unit = null
                                 gameboard.buttons[this.data.team][this.data.unit.parentX+i][this.data.unit.parentY+j].data.state = "empty"
+                                gameboard.buttons[this.data.team][this.data.unit.parentX+i][this.data.unit.parentY+j].data.unit = null
                             }
                         }
                     } else {
